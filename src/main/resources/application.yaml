@@ -3,6 +3,19 @@ spring:
   mvc:
     servlet:
       path: /api
+  profiles:
+    active: local
+    # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: xxx
+    username: xxx
+    password: xxx
+
+# mybatis-plus
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
 
 # knife4j 的增强配置，不需要增强可以不配
 knife4j:

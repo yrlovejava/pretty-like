@@ -23,6 +23,12 @@
     </properties>
 
     <dependencies>
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.10.1</version>
+        </dependency>
         <!-- knife4j 接口文档 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
