@@ -1,25 +1,18 @@
-package org.xiaobai.prettylike.model.entity;
+package org.xiaobai.prettylike.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
 
 /**
- * 内容表
+ * 内容返回VO
  */
 @Data
-@TableName(value ="blog")
-public class Blog {
+public class BlogVO {
     /**
      *
      */
-    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
-
-    private Long userId;
 
     /**
      * 标题
@@ -47,7 +40,8 @@ public class Blog {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 是否已点赞
      */
-    private Date updateTime;
+    private Boolean hasThumb;
+
 }
