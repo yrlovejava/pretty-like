@@ -1,6 +1,7 @@
 package org.xiaobai.prettylike.job;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -27,18 +28,23 @@ public class SyncThumb2DBCompensatoryJob {
     @Resource
     private SyncThumb2DBJob syncThumb2DBJob;
 
-    @Scheduled(cron = "0 0 2 * * *")
-    public void run(){
+    @Scheduled(cron = "0 0 2 * * *")// 每天凌晨2点执行
+    public void run() {
         log.info("开始执行补偿任务");
+        // 查所有的时间分片，查看是否有还没有删除的分片
         Set<String> thumbKeys = redisTemplate.keys(RedisKeyUtil.getTempThumbKey("") + "*");
+        if (CollUtil.isEmpty(thumbKeys)) {
+            log.info("没有需要处理的数据");
+            return;
+        }
+
         Set<String> needHandleDataSet = new HashSet<>();
         thumbKeys.stream()
                 .filter(ObjUtil::isNotNull)
                 .forEach(thumbKey -> needHandleDataSet.add(
                         thumbKey.replace(ThumbConstant.TEMP_THUMB_KEY_PREFIX.formatted(""), "")
                 ));
-
-        if (CollUtil.isEmpty(needHandleDataSet)) {
+        if(CollUtil.isEmpty(needHandleDataSet)){
             log.info("没有需要处理的数据");
             return;
         }

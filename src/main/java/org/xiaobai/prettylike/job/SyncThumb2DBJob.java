@@ -37,7 +37,7 @@ public class SyncThumb2DBJob {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Scheduled(initialDelay = 10000, fixedDelay = 10000)
+    @Scheduled(initialDelay = 10000, fixedDelay = 10000)// 首次延迟10s，间隔10s
     @Transactional(rollbackFor = Exception.class)
     public void run() {
         log.info("开始执行");
@@ -47,22 +47,30 @@ public class SyncThumb2DBJob {
         log.info("临时数据同步完成");
     }
 
+    /**
+     * 根据传入时间片将临时点赞数据和取消点赞数据同步到数据库
+     * @param date 日期
+     */
     public void syncThumb2DBByDate(String date) {
         // 获取到临时点赞和取消点赞数据
         // todo 如果数据量过大，可以分批读取数据
         String tempThumbKey = RedisKeyUtil.getTempThumbKey(date);
+        // 这里获取到了临时点赞数(hash结构)
         Map<Object, Object> allTempThumbMap = redisTemplate.opsForHash().entries(tempThumbKey);
         boolean thumbMapEmpty = CollUtil.isEmpty(allTempThumbMap);
+        if (thumbMapEmpty) {
+            // 如果为空直接返回
+            return;
+        }
 
         // 同步点赞到数据库
         Map<Long, Long> blogThumbCountMap = new HashMap<>();
-        if (thumbMapEmpty) {
-            return;
-        }
         ArrayList<Thumb> thumbList = new ArrayList<>();
         LambdaQueryWrapper<Thumb> wrapper = new LambdaQueryWrapper<>();
         boolean needRemove = false;
+        // 遍历所有点赞记录
         for (Object userIdBlogIdObj : allTempThumbMap.keySet()) {
+            // key 为 {userId}:{BlogId} value 为 0:点赞 -1:取消点赞
             String userIdBlogId = (String) userIdBlogIdObj;
             String[] userIdAndBlogId = userIdBlogId.split(StrPool.COLON);
             Long userId = Long.valueOf(userIdAndBlogId[0]);
@@ -78,6 +86,7 @@ public class SyncThumb2DBJob {
                 // 拼接查询条件，批量删除
                 // todo 数据量过大，可以分批操作
                 needRemove = true;
+                // or 会拼接条件
                 wrapper.or().eq(Thumb::getUserId, userId).eq(Thumb::getBlogId, blogId);
             } else {
                 if (thumbType != ThumbTypeEnum.NON.getValue()) {
@@ -101,7 +110,7 @@ public class SyncThumb2DBJob {
             blogMapper.batchUpdateThumbCount(blogThumbCountMap);
         }
 
-        // 异步删除
+        // 异步删除 Redis 中的临时数据
         Thread.startVirtualThread(() -> {
             redisTemplate.delete(tempThumbKey);
         });

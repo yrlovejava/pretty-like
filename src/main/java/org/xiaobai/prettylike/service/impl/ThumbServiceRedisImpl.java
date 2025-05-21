@@ -33,6 +33,13 @@ public class ThumbServiceRedisImpl extends ServiceImpl<ThumbMapper, Thumb> imple
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * 点赞 认为两部分，点赞数和点赞记录，点赞数按照时间分片（hash结构），点赞记录是每个用户一个hash
+     * 通过 LUA 脚本，对点赞数增加，插入点赞记录（会先判断是否已经点赞）
+     * @param doThumbRequest 点赞请求
+     * @param request http请求
+     * @return 是否成功
+     */
     @Override
     public Boolean doThumb(DoThumbRequest doThumbRequest, HttpServletRequest request) {
         if (doThumbRequest == null || doThumbRequest.getBlogId() == null) {
@@ -47,6 +54,7 @@ public class ThumbServiceRedisImpl extends ServiceImpl<ThumbMapper, Thumb> imple
         String userThumbKey = RedisKeyUtil.getUserThumbKey(loginUser.getId());
 
         // 执行 Lua 脚本
+        // TODO 点赞记录会有大 Key 问题
         Long result = redisTemplate.execute(
                 RedisLuaScriptConstant.THUMB_SCRIPT,
                 Arrays.asList(tempThumbKey, userThumbKey),
@@ -106,6 +114,7 @@ public class ThumbServiceRedisImpl extends ServiceImpl<ThumbMapper, Thumb> imple
 
     @Override
     public Boolean hasThumb(Long blogId, Long userId) {
-        return redisTemplate.opsForHash().hasKey(RedisKeyUtil.getUserThumbKey(userId), blogId.toString());
+        return redisTemplate.opsForHash()
+                .hasKey(RedisKeyUtil.getUserThumbKey(userId), blogId.toString());
     }
 }
