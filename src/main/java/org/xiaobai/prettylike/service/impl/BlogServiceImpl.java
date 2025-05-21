@@ -16,6 +16,7 @@ import org.xiaobai.prettylike.model.vo.BlogVO;
 import org.xiaobai.prettylike.service.BlogService;
 import org.xiaobai.prettylike.service.ThumbService;
 import org.xiaobai.prettylike.service.UserService;
+import org.xiaobai.prettylike.utils.RedisKeyUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -63,8 +64,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         if (ObjUtil.isNotEmpty(loginUser)) {
             List<Object> blogIdList = blogList.stream().map(blog -> blog.getId().toString()).collect(Collectors.toList());
 
+            // 获取点赞
             List<Object> thumbList = redisTemplate.opsForHash()
-                    .multiGet(ThumbConstant.USER_THUMB_KEY_PREFIX + loginUser.getId(), blogIdList);
+                    .multiGet(RedisKeyUtil.getUserThumbKey(loginUser.getId()), blogIdList);
             for (int i = 0; i < thumbList.size(); i++) {
                 if (thumbList.get(i) == null) {
                     continue;
