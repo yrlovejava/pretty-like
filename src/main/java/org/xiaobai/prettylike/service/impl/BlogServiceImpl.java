@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.xiaobai.prettylike.common.constant.ThumbConstant;
 import org.xiaobai.prettylike.mapper.BlogMapper;
 import org.xiaobai.prettylike.model.entity.Blog;
 import org.xiaobai.prettylike.model.entity.User;
