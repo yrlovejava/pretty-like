@@ -11,6 +11,13 @@ spring:
     url: xxx
     username: xxx
     password: xxx
+  data:
+    redis:
+      host: 47.109.99.11
+      port: 6379
+      password: YOLO123456abcde!!!
+      database: 0
+      timeout: 5000
 
 # mybatis-plus
 mybatis-plus:
