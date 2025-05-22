@@ -1,10 +1,13 @@
 package org.xiaobai.prettylike;
 
 import jakarta.annotation.Resource;
+import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.xiaobai.prettylike.model.entity.Blog;
 import org.xiaobai.prettylike.model.entity.Thumb;
 import org.xiaobai.prettylike.model.entity.User;
@@ -13,10 +16,18 @@ import org.xiaobai.prettylike.service.ThumbService;
 import org.xiaobai.prettylike.service.UserService;
 import org.xiaobai.prettylike.utils.SnowflakeIdGenerator;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.*;
+
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @Slf4j
 @SpringBootTest
+@AutoConfigureMockMvc
 public class PrettyLikeBackendApplicationTest {
 
     @Resource
@@ -27,6 +38,9 @@ public class PrettyLikeBackendApplicationTest {
 
     @Resource
     private BlogService blogService;
+
+    @Resource
+    private MockMvc mockMvc;
 
     @Test
     void contextLoads() {
@@ -153,5 +167,39 @@ public class PrettyLikeBackendApplicationTest {
         long oneYearAgo = now - 365L * 24 * 60 * 60 * 1000;
         long randomTime = oneYearAgo + random.nextLong(now - oneYearAgo);
         return new Date(randomTime);
+    }
+
+    @Test
+    void testLoginAndExportSessionToCsv() throws Exception {
+        List<User> list = userService.list();
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter("session_output.csv", true))) {
+            // 如果文件是第一次写入，你也可以加一个逻辑写表头
+            writer.println("userId,sessionId,timestamp");
+
+            for (User user : list) {
+                long testUserId = user.getId();
+
+                MvcResult result = mockMvc.perform(get("/user/login")
+                                .param("userId", String.valueOf(testUserId))
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andReturn();
+
+                List<String> setCookieHeaders = result.getResponse().getHeaders("Set-Cookie");
+                assertThat(setCookieHeaders).isNotEmpty();
+
+                String sessionId = setCookieHeaders.stream()
+                        .filter(cookie -> cookie.startsWith("SESSION")) // Spring Session 默认是 SESSION（不是 JSESSIONID）
+                        .map(cookie -> cookie.split(";")[0]) // SESSION=xxx
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("No SESSION found in response"));
+
+                String sessionValue = sessionId.split("=")[1];
+
+                writer.printf("%d,%s,%s%n", testUserId, sessionValue, LocalDateTime.now());
+
+                System.out.println("✅ 写入 CSV：" + testUserId + " -> " + sessionValue);
+            }
+        }
     }
 }
