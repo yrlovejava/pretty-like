@@ -25,7 +25,7 @@ import java.util.Objects;
  * 点赞 Redis 实现层
  */
 @Slf4j
-@Service("thumbService")
+@Service("thumbServiceRedis")
 @RequiredArgsConstructor
 public class ThumbServiceRedisImpl extends ServiceImpl<ThumbMapper, Thumb> implements ThumbService {
 
