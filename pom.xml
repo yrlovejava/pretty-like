@@ -41,16 +41,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>3.2.5</version>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>1.12.5</version>
         </dependency>
         <!-- 引入 spring-pulsar -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-pulsar</artifactId>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-pulsar</artifactId>
+            <version>3.2.5</version>
+        </dependency>
         <!-- 本地缓存 -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
@@ -67,15 +70,24 @@
                     <groupId>io.lettuce</groupId>
                 </exclusion>
             </exclusions>
+            <version>3.2.5</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
+            <version>5.0.2</version>
         </dependency>
         <!-- 引入 SpringSession -->
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
+            <version>3.2.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-redis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- hutool 工具包 -->
         <dependency>
@@ -98,6 +110,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.2.5</version>
         </dependency>
 
         <dependency>
@@ -105,10 +118,12 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+            <version>3.2.5</version>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+            <version>8.3.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -120,6 +135,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>3.2.5</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -127,15 +143,34 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
                         </exclude>
                     </excludes>
+                    <jvmArguments>
+                        --add-opens=java.management/sun.management=ALL-UNNAMED
+                        --add-opens=java.base/sun.net=ALL-UNNAMED
+                    </jvmArguments>
                 </configuration>
             </plugin>
         </plugins>

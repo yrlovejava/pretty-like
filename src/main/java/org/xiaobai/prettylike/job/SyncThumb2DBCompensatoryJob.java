@@ -1,7 +1,6 @@
 package org.xiaobai.prettylike.job;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ import java.util.Set;
  * 当数据在 Redis 中，由于不可控因素导致没有成功同步到数据库时，通过该任务补偿
  */
 @Slf4j
-@Component
+//@Component
 public class SyncThumb2DBCompensatoryJob {
 
     @Resource

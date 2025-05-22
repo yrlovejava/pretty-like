@@ -20,7 +20,7 @@ import org.xiaobai.prettylike.service.UserService;
 /**
  * 点赞表 Service 实现类
  */
-@Service("thumbService")
+@Service("thumbServiceLocalCache")
 @RequiredArgsConstructor
 public class ThumbServiceImpl extends ServiceImpl<ThumbMapper, Thumb> implements ThumbService {
 

@@ -25,7 +25,7 @@ import java.util.Map;
  * 定时将 Redis 中的临时点赞数据同步到数据库
  */
 @Slf4j
-@Component
+//@Component
 public class SyncThumb2DBJob {
 
     @Resource
