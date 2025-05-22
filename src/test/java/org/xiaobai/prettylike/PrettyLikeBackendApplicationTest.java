@@ -1,5 +1,6 @@
 package org.xiaobai.prettylike;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import jakarta.annotation.Resource;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,9 @@ import org.xiaobai.prettylike.service.ThumbService;
 import org.xiaobai.prettylike.service.UserService;
 import org.xiaobai.prettylike.utils.SnowflakeIdGenerator;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -200,6 +203,52 @@ public class PrettyLikeBackendApplicationTest {
 
                 System.out.println("✅ 写入 CSV：" + testUserId + " -> " + sessionValue);
             }
+        }
+    }
+
+    /**
+     * 生成压测使用的点赞数据
+     */
+    @Test
+    void initDoLikeData() throws IOException {
+        List<Long> allBlogIds = blogService.list(Wrappers.<Blog>lambdaQuery().select(Blog::getId))
+                .stream()
+                .map(Blog::getId)
+                .toList();
+        int recordsPerBlogId = 1000;
+        String outputPath = "jemeter/like.csv";
+
+        File dir = new File(outputPath).getParentFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(outputPath, false))) {
+            Random random = new Random();
+
+            // 将blogId分为热点组和普通组（80/20规则）
+            int hotCount = Math.max(1, allBlogIds.size() / 5); // 20%作为热点
+            List<Long> hotBlogIds = allBlogIds.subList(0, hotCount);
+            List<Long> normalBlogIds = allBlogIds.subList(hotCount, allBlogIds.size());
+
+            // 生成数据：80%请求分配给热点组，20%给普通组
+            int totalRecords = allBlogIds.size() * recordsPerBlogId;
+            int hotRecords = (int) (totalRecords * 0.8);
+            int normalRecords = totalRecords - hotRecords;
+
+            // 生成热点数据
+            for (int i = 0; i < hotRecords; i++) {
+                int randomIndex = random.nextInt(hotBlogIds.size());
+                writer.println(hotBlogIds.get(randomIndex));
+            }
+
+            // 生成普通数据
+            for (int i = 0; i < normalRecords; i++) {
+                int randomIndex = random.nextInt(normalBlogIds.size());
+                writer.println(normalBlogIds.get(randomIndex));
+            }
+
+            System.out.println("✅ 生成完成：" + totalRecords + " 条带热点的点赞数据");
         }
     }
 }

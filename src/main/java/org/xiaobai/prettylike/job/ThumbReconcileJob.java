@@ -73,7 +73,7 @@ public class ThumbReconcileJob {
             Set<Long> diffBlogIds = Sets.difference(redisBlogIds,mysqlBlogIds);
 
             // 4.发送补偿事件
-
+            sendCompensationEvents(userId,diffBlogIds);
         });
 
         log.info("对账任务完成，耗时：{}ms", System.currentTimeMillis() - startTime);
